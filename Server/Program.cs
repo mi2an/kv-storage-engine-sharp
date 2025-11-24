@@ -1,5 +1,5 @@
-using Storage;
 using Microsoft.AspNetCore.Mvc;
+using Server.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<IKvStoreEngine<string, string>, StringKvStoreEngine>();
+builder.Services.AddSingleton<IKvStorageEngine<string, string>, StringKvStorageEngine>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -25,13 +25,13 @@ app.MapGet("/", () =>
 
 
 
-app.MapGet("/{key}", async (string key, IKvStoreEngine<string, string> store) =>
+app.MapGet("/{key}", async (string key, IKvStorageEngine<string, string> store) =>
 {
     var result = await store.LoadDataAsync(key);
     return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound(result.Error);
 });
 
-app.MapPut("/{key}", async (string key, [FromBody] string value, IKvStoreEngine<string, string> store) =>
+app.MapPut("/{key}", async (string key, [FromBody] string value, IKvStorageEngine<string, string> store) =>
 {
     var result = await store.SaveDataAsync(key, value);
     return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);

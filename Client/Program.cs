@@ -3,12 +3,12 @@ using System.Text.Json;
 
 const string Host = "http://localhost:5135"; // We don't bother creating a configuration file for now. It's simpler this way.
 
-var data =  File.ReadLinesAsync("test-data/put.txt");
+var data = File.ReadLinesAsync("test-data/put.txt");
 
 using HttpClient client = CreateKvStoreEngineClient(Host);
 File.Delete("error.log");
 await foreach (var row in data)
-{   
+{
     await ProcessRowRequest(row, client);
 }
 if (File.Exists("error.log"))
@@ -24,7 +24,7 @@ else
 
 static HttpClient CreateKvStoreEngineClient(string host)
 {
-    HttpClient client = new HttpClient
+    HttpClient client = new()
     {
         BaseAddress = new Uri(host)
     };
@@ -41,9 +41,10 @@ static async Task ProcessRowRequest(string row, HttpClient client)
         Console.WriteLine("Empty row.");
         return;
     }
-    
+
     string[] spliced = row.Split(' ');
-    if (spliced.Length != 3) {
+    if (spliced.Length != 3)
+    {
         Console.WriteLine("Row does not contain exactly 3 parts.");
         return;
     }
@@ -58,20 +59,24 @@ static async Task ProcessRowRequest(string row, HttpClient client)
             string jsonValue = JsonSerializer.Serialize(value); //We have to make sure the result is interpreted as a JSON string.
             HttpContent putContent = new StringContent(jsonValue, System.Text.Encoding.UTF8, "application/json");
             HttpResponseMessage putResponse = await client.PutAsync($"/{key}", putContent);
-            if (!putResponse.IsSuccessStatusCode) {
+            if (!putResponse.IsSuccessStatusCode)
+            {
                 File.AppendAllText("error.log", $"\nPUT {key} failed with status code: {putResponse.StatusCode}");
             }
             break;
         case "GET":
             HttpResponseMessage getResponse = await client.GetAsync($"/{key}");
-            switch(getResponse.StatusCode) {
+            switch (getResponse.StatusCode)
+            {
                 case System.Net.HttpStatusCode.NotFound:
-                    if (value != "NOT_FOUND") {
+                    if (value != "NOT_FOUND")
+                    {
                         File.AppendAllText("error.log", $"\nGET {key} error: Key not found (expected value {value}).");
                     }
                     break;
                 default:
-                    if (getResponse.IsSuccessStatusCode) {
+                    if (getResponse.IsSuccessStatusCode)
+                    {
                         string body = await getResponse.Content.ReadAsStringAsync();
                         var result = JsonSerializer.Deserialize<string>(body);
 

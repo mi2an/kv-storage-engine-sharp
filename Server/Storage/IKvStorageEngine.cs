@@ -1,8 +1,8 @@
-using Core;
+using Server.Core;
 
-namespace Storage;
+namespace Server.Storage;
 
-public interface IKvStoreEngine<Key, TValue>
+public interface IKvStorageEngine<Key, TValue>
 {
     Task<Result> SaveDataAsync(Key key, TValue data);
     Task<Result<TValue>> LoadDataAsync(Key key);

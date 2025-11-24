@@ -1,4 +1,4 @@
-namespace Core;
+namespace Server.Core;
 
 public class Result {
     public bool IsSuccess { get; }

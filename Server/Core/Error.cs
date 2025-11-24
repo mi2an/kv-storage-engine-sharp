@@ -1,4 +1,4 @@
-namespace Core;
+namespace Server.Core;
 
 public enum ErrorType {
     NotFound,
