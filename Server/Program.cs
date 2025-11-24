@@ -20,7 +20,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/", () =>
 {
-    return "Welcome to the kv-store-engine application";
+    return "Welcome, Adventurer!";
 });
 
 
@@ -36,6 +36,7 @@ app.MapPut("/{key}", async (string key, [FromBody] string value, IKvStoreEngine<
     var result = await store.SaveDataAsync(key, value);
     return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
 });
+
 
 
 
