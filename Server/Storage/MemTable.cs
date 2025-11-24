@@ -18,7 +18,7 @@ public class MemTable<TKey, TValue>(IComparer<TKey>? comparer = default) where T
         return Table.TryGetValue(key, out value);
     }
 
-    public async IAsyncEnumerable<KeyValuePair<TKey, TValue>> Flush()
+    public async IAsyncEnumerable<KeyValuePair<TKey, TValue>> FlushAsync()
     {
         lock(Table)
         {

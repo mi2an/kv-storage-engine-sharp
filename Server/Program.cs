@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Server.Storage;
+using static Server.Storage.StringKvStorageEngine;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<IKvStorageEngine<string, string>, StringKvStorageEngine>();
+builder.Services.AddSingleton<IKvStorageEngine<string, string>, StringKvStorageEngine>(o =>
+{
+    return new StringKvStorageEngine(new StringKvStorageEngineConfiguration("Data/Manifest", 20_000 /* just to test 'PUT' */));
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
