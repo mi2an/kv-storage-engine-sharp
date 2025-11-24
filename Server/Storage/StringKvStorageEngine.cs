@@ -1,11 +1,10 @@
-using System.Collections.Concurrent;
 using Server.Core;
 
 namespace Server.Storage;
 
 public class StringKvStorageEngine : IKvStorageEngine<string, string>
 {
-    private ConcurrentDictionary<string, string> Storage { get; } = new();
+    private MemTable<string, string> Storage { get; } = new();
 
     public async Task<Result> SaveDataAsync(string key, string data)
     {
@@ -36,7 +35,7 @@ public class StringKvStorageEngine : IKvStorageEngine<string, string>
         {
             return Result<string>.Failure(Error.NotFound($"Key '{key}' not found."));
         }
-        return Result<string>.Success(value);
+        return Result<string>.Success(value!);
     }
 
     public async Task<Result<string>> DeleteDataAsync(string key)
