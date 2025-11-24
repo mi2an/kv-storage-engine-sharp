@@ -94,11 +94,29 @@ public class StringKvStorageEngine(StringKvStorageEngine.StringKvStorageEngineCo
 
     public async Task<Result<string>> LoadDataAsync(string key)
     {
-        if (!Storage.TryGetValue(key, out var value))
+        if (Storage.TryGetValue(key, out var value))
         {
-            return Result<string>.Failure(Error.NotFound($"Key '{key}' not found."));
+            return Result<string>.Success(value!);
         }
-        return Result<string>.Success(value!);
+
+        var rows = (await File.ReadAllLinesAsync(Configuration.ManifestFile, Encoding.UTF8)).Where((_, i) => i > 0);
+        var stackFiles = new Stack<string>(rows);
+        var dir = Path.GetDirectoryName(Configuration.ManifestFile)!;
+        while (stackFiles.TryPop(out var lastFile))
+        {
+            var path = Path.Combine(dir, lastFile);
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            await foreach (var kvp in JsonSerializer.DeserializeAsyncEnumerable<dynamic>(fs))
+            {
+                var sstK = kvp!.GetProperty("Key").ToString();
+                if (sstK == key)
+                {
+                    return Result<string>.Success(kvp.GetProperty("Value").ToString());
+                }
+            }
+        }
+
+        return Result<string>.Failure(Error.NotFound($"Key '{key}' not found."));
     }
 
     public async Task<Result<string>> DeleteDataAsync(string key)

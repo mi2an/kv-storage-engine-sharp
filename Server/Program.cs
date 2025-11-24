@@ -10,7 +10,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddSingleton<IKvStorageEngine<string, string>, StringKvStorageEngine>(o =>
 {
-    return new StringKvStorageEngine(new StringKvStorageEngineConfiguration("Data/Manifest", 20_000 /* just to test 'PUT' */));
+    const int MAX_ELEMENTS = 2000; //Instructed in the blog: week-2
+    return new StringKvStorageEngine(new StringKvStorageEngineConfiguration("Data/Manifest", MAX_ELEMENTS));
 });
 var app = builder.Build();
 

@@ -2,32 +2,45 @@
 
 public class MemTable<TKey, TValue>(IComparer<TKey>? comparer = default) where TKey : notnull
 {
+    private readonly SemaphoreSlim Semaphore = new(1, 1);
     public TValue this[TKey key]
     {
-        set {
-            lock (Table) { 
-                Table[key] = value; 
-            }
+        set
+        {
+            Semaphore.Wait();
+            Table[key] = value;
+            Semaphore.Release();
         }
     }
 
-    public int Count => Table.Count;
+    public int Count
+    {
+        get
+        {
+            Semaphore.Wait();
+            var res = Table.Count;
+            Semaphore.Release();
+            return res;
+        }
+    }
 
     public bool TryGetValue(TKey key, out TValue? value)
     {
-        return Table.TryGetValue(key, out value);
+        Semaphore.Wait();
+        var res = Table.TryGetValue(key, out value);
+        Semaphore.Release();
+        return res;
     }
 
     public async IAsyncEnumerable<KeyValuePair<TKey, TValue>> FlushAsync()
     {
-        lock(Table)
+        Semaphore.Wait();
+        foreach (var kvp in Table)
         {
-            foreach (var kvp in Table)
-            {
-                yield return kvp;
-            }
-            Table.Clear();
+            yield return kvp;
         }
+        Table.Clear();
+        Semaphore.Release();
     }
 
     private SortedDictionary<TKey, TValue> Table { get; } = new SortedDictionary<TKey, TValue>(comparer);
