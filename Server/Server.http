@@ -1,0 +1,6 @@
+@Server_HostAddress = http://localhost:5135
+
+GET {{Server_HostAddress}}/{{key}}
+Accept: application/json
+
+###
